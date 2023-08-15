@@ -49,7 +49,8 @@ class pick_and_place_left():
         print("Model Coordinates Found")
         self.pick_and_place_service = rospy.Service("/pick_and_place", pick_and_place, self.pick_and_place)
         while self.final_position_found == 0:
-            print("Waiting for Place Position to be found")
+            # print("Waiting for Place Position to be found")
+            a = 1+1
         self.step()
 
     def pick_and_place(self, data):
@@ -80,16 +81,20 @@ class pick_and_place_left():
         return err.val
 
     def model_state_callback(self, data):
-        # if self.model_found == 1:
-        #     pass
-        model = data.name
-        # model_index = model[3]
-        cube_left = data.pose[3]
+        '''
+        This subscriber searches through the available models in the world and stores the x, y, and z world coordinte of the desired model for picking up
+        '''
+        desired_model_name = 'cube3'# This is where you must store the desired model names
         self.item_location = geometry_msgs.msg.Pose()
+
+        model = data.name
+        model_index = model.index(desired_model_name) 
+
+        cube_left = data.pose[model_index]
         self.item_location.position.x = cube_left.position.x
-        a = 3.0
         self.item_location.position.y = cube_left.position.y
         self.item_location.position.z = cube_left.position.z
+
         self.model_found = 1
 
     def step(self):
