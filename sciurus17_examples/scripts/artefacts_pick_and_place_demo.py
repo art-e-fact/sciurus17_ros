@@ -24,7 +24,8 @@ class pick_and_place_left():
         '''
         The init function is neccesary to initialize all variables, parameters, and other functions. 
         '''
-        self.i = 0
+        self.model_found = 0
+        self.final_position_found = 0
         self.robot = moveit_commander.RobotCommander()
 
         self.arm = moveit_commander.MoveGroupCommander("l_arm_group")
@@ -43,10 +44,12 @@ class pick_and_place_left():
         # print(self.model_coordinates)
         # self.object_coordinates = self.model_coordinates("8115RC_V2", "")
         self.arm_init()
-        while self.i == 0:
-            print("Waiting for coordinates")
+        while self.model_found == 0:
+            print("Waiting for Model coordinates")
+        print("Model Coordinates Found")
         self.pick_and_place_service = rospy.Service("/pick_and_place", pick_and_place, self.pick_and_place)
-
+        while self.final_position_found == 0:
+            print("Waiting for Place Position to be found")
         self.step()
 
     def pick_and_place(self, data):
@@ -72,37 +75,29 @@ class pick_and_place_left():
             self.good_place_pose_y = target_place_pose.position.y
             self.good_place_pose_z = target_place_pose.position.z
 
+            self.final_position_found = 1
+
         return err.val
 
     def model_state_callback(self, data):
-        if self.i == 1:
-            pass
+        # if self.model_found == 1:
+        #     pass
         model = data.name
         # model_index = model[3]
         cube_left = data.pose[3]
-        print(cube_left)
         self.item_location = geometry_msgs.msg.Pose()
         self.item_location.position.x = cube_left.position.x
         a = 3.0
         self.item_location.position.y = cube_left.position.y
         self.item_location.position.z = cube_left.position.z
-        self.i = 1
+        self.model_found = 1
 
     def step(self):
+        '''
+        Step is a function that executes pre-pick, pick, & place motions
+        '''
         # self.arm.set_position_target([data.Pose.position.x, data.Pose.position.y, data.Pose.position.z])
         target_pose = geometry_msgs.msg.Pose()
-        # data.position.x = 2
-        # data.position.y = self.cubeY
-        # data.position.z = self.cubeZ
-
-        # # data.position.x = 0.3
-        # # data.position.y = 0.1
-        # # data.position.z = 0.1
-        # q = quaternion_from_euler(-3.14/2.0, 0.0, 0.0)  # 上方から掴みに行く場合 When grabbing from above
-        # data.orientation.x = q[0]
-        # data.orientation.y = q[1]
-        # data.orientation.z = q[2]
-        # data.orientation.w = q[3]
 
         target_pose.position.x = 0.2511
         target_pose.position.y = 0.0
@@ -123,21 +118,33 @@ class pick_and_place_left():
         self.open_gripper()
         self.arm.go()							# 実行
 
-        # print(err)
-        # print(success)
-
-        # target_pose.position.x = float('%.3g'%self.cubeX)
-        # target_pose.position.x = 0.3
-        # target_pose.position.y = 0.1
-        # target_pose.position.z = 0.1
 
         target_pose.position.x = self.item_location.position.x
 
         target_pose.position.y = self.item_location.position.y 
-        target_pose.position.z = self.item_location.position.z - 1
+        target_pose.position.z = self.item_location.position.z - 0.9 # 0.9 represents the the difference in between where the robot pick the cube and the top of the cube
         print(target_pose.position.z)
 
-        # print(self.cubeZ)
+        q = quaternion_from_euler(-3.14/2.0, 0.0, 0.0)  # 上方から掴みに行く場合 When grabbing from above
+        target_pose.orientation.x = q[0]
+        target_pose.orientation.y = q[1]
+        target_pose.orientation.z = q[2]
+        target_pose.orientation.w = q[3]
+
+        self.arm.set_pose_target(target_pose)
+        self.arm.go()
+
+        self.close_gripper()
+        self.arm.go()
+
+        # Hard coded final positon
+        # target_pose.position.x = 0.45
+        # target_pose.position.y = 0.1
+        # target_pose.position.z = 0.13
+        target_pose.position.x = self.good_place_pose_x
+        target_pose.position.y = self.good_place_pose_y
+        target_pose.position.z = self.good_place_pose_z
+
         q = quaternion_from_euler(-3.14/2.0, 0.0, 0.0)  # 上方から掴みに行く場合 When grabbing from above
         target_pose.orientation.x = q[0]
         target_pose.orientation.y = q[1]
@@ -145,29 +152,17 @@ class pick_and_place_left():
         target_pose.orientation.w = q[3]
 
         self.arm.set_pose_target(target_pose)  # 目標ポーズ設定
+
+        success, traj_msg,  plan_time, err = self.arm.plan()
+
+        if err.val == 1:
+            self.arm.execute(traj_msg)
+
+        self.open_gripper()
         self.arm.go()
 
-        self.close_gripper()
-        self.arm.go()
+        self.arm_init()
 
-        # target_pose.position.x = 0.45
-        # target_pose.position.y = 0.1
-        # target_pose.position.z = 0.13
-        # q = quaternion_from_euler(-3.14/2.0, 0.0, 0.0)  # 上方から掴みに行く場合 When grabbing from above
-        # target_pose.orientation.x = q[0]
-        # target_pose.orientation.y = q[1]
-        # target_pose.orientation.z = q[2]
-        # target_pose.orientation.w = q[3]
-
-        # self.arm.set_pose_target(target_pose)  # 目標ポーズ設定
-
-        # success, traj_msg,  plan_time, err = self.arm.plan()
-
-        # if err.val == 1:
-        #     self.arm.execute(traj_msg)
-
-        # self.open_gripper()
-        # self.arm.go()
 
     def arm_init(self):
         '''
@@ -185,12 +180,6 @@ class pick_and_place_left():
         # # 何かを掴んでいた時のためにハンドを開く Open your hand for when you were holding something
 
         self.open_gripper()
-
-        # gripper_goal.command.position = -0.9
-        # gripper.send_goal(gripper_goal)
-        # gripper.wait_for_result(rospy.Duration(1.0))
-
-        # SRDFに定義されている"home"の姿勢にする Set to "home" posture defined in SRDF Set to "home" posture defined in SRDF
 
         self.arm.set_named_target("l_arm_init_pose")
         self.arm.go()
@@ -223,99 +212,7 @@ class pick_and_place_left():
         self.gripper.wait_for_result(rospy.Duration(1.0))
 
         self.gripper_status = 0
-
-    def lift(self):
-        '''
-        
-        '''
-
-        # 持ち上げる lift
-        target_pose = geometry_msgs.msg.Pose()
-        target_pose.position.x = 0.25
-        target_pose.position.y = 0.0
-        target_pose.position.z = 0.3
-        q = quaternion_from_euler(-3.14/2.0, 0.0, 0.0)  # 上方から掴みに行く場合 When grabbing from above
-        target_pose.orientation.x = q[0]
-        target_pose.orientation.y = q[1]
-        target_pose.orientation.z = q[2]
-        target_pose.orientation.w = q[3]
-
-        self.arm.set_pose_target(target_pose)  # 目標ポーズ設定
-        self.arm.go()							# 実行
-
-    def new_position(self):
-
-        '''
-        
-        '''
-
-        # 移動する Moving
-        target_pose = geometry_msgs.msg.Pose()
-        target_pose.position.x = 0.4
-        target_pose.position.y = 0.0
-        target_pose.position.z = 0.3
-        q = quaternion_from_euler(-3.14/2.0, 0.0, 0.0)  # 上方から掴みに行く場合 When grabbing from above
-        target_pose.orientation.x = q[0]
-        target_pose.orientation.y = q[1]
-        target_pose.orientation.z = q[2]
-        target_pose.orientation.w = q[3]
-
-        self.arm.set_pose_target(target_pose)  # 目標ポーズ設定
-        self.arm.go()  # 実行
-
-    def place(self):
-
-        '''
-        
-        '''
-
-        # 下ろす Put down
-        target_pose = geometry_msgs.msg.Pose()
-        target_pose.position.x = 0.4
-        target_pose.position.y = 0.0
-        target_pose.position.z = 0.13
-        q = quaternion_from_euler(-3.14/2.0, 0.0, 0.0)  # 上方から掴みに行く場合 When grabbing from above
-        target_pose.orientation.x = q[0]
-        target_pose.orientation.y = q[1]
-        target_pose.orientation.z = q[2]
-        target_pose.orientation.w = q[3]
-
-        self.arm.set_pose_target(target_pose)  # 目標ポーズ設定
-        self.arm.go()  # 実行
-
-    # ハンドを開く open hand 
-
-        self.open_gripper()
-    # gripper_goal.command.position = -0.7
-    # gripper.send_goal(gripper_goal)
-    # gripper.wait_for_result(rospy.Duration(1.0))
-
-    # 少しだけハンドを持ち上げる lift the hand slightly
-
-    # target_pose = geometry_msgs.msg.Pose()
-    # target_pose.position.x = 0.4
-    # target_pose.position.y = 0.0
-    # target_pose.position.z = 0.2
-    # q = quaternion_from_euler(-3.14/2.0, 0.0, 0.0)  # 上方から掴みに行く場合 When grabbing from above
-    # target_pose.orientation.x = q[0]
-    # target_pose.orientation.y = q[1]
-    # target_pose.orientation.z = q[2]
-    # target_pose.orientation.w = q[3]
-
-    # arm.set_pose_target(target_pose)  # 目標ポーズ設定
-    # arm.go()  # 実行
-
-# # box_position_x = 0.3
-# # box_position_y = -0.1
-# # box_position_z = 1.01
-
-
-    # SRDFに定義されている"home"の姿勢にする
-        self.arm.set_named_target("l_arm_init_pose")
-        self.arm.go()
-
-    print("done")
-
+						# 実行
 
 
 
