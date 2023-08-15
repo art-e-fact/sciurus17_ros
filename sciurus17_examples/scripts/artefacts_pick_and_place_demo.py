@@ -47,7 +47,7 @@ class pick_and_place_left():
             print("Waiting for coordinates")
         self.pick_and_place_service = rospy.Service("/pick_and_place", pick_and_place, self.pick_and_place)
 
-        # self.step()
+        self.step()
 
     def pick_and_place(self, data):
         target_place_pose = geometry_msgs.msg.Pose()
@@ -80,14 +80,15 @@ class pick_and_place_left():
         model = data.name
         # model_index = model[3]
         cube_left = data.pose[3]
-        self.cubeX = float(cube_left.position.x)
+        print(cube_left)
+        self.item_location = geometry_msgs.msg.Pose()
+        self.item_location.position.x = cube_left.position.x
         a = 3.0
-        self.cubeY = float(cube_left.position.y)
-        self.cubeZ = float(cube_left.position.z)
+        self.item_location.position.y = cube_left.position.y
+        self.item_location.position.z = cube_left.position.z
         self.i = 1
 
     def step(self):
-        print(self.cubeX)
         # self.arm.set_position_target([data.Pose.position.x, data.Pose.position.y, data.Pose.position.z])
         target_pose = geometry_msgs.msg.Pose()
         # data.position.x = 2
@@ -130,11 +131,11 @@ class pick_and_place_left():
         # target_pose.position.y = 0.1
         # target_pose.position.z = 0.1
 
-        target_pose.position.x = self.cubeX
+        target_pose.position.x = self.item_location.position.x
 
-        target_pose.position.y = self.cubeY
-        print(float('%.3g'%self.cubeY))
-        target_pose.position.z = self.cubeZ
+        target_pose.position.y = self.item_location.position.y 
+        target_pose.position.z = self.item_location.position.z - 1
+        print(target_pose.position.z)
 
         # print(self.cubeZ)
         q = quaternion_from_euler(-3.14/2.0, 0.0, 0.0)  # 上方から掴みに行く場合 When grabbing from above
@@ -144,37 +145,29 @@ class pick_and_place_left():
         target_pose.orientation.w = q[3]
 
         self.arm.set_pose_target(target_pose)  # 目標ポーズ設定
-        print("before plan")
         self.arm.go()
 
         self.close_gripper()
         self.arm.go()
 
+        # target_pose.position.x = 0.45
+        # target_pose.position.y = 0.1
+        # target_pose.position.z = 0.13
+        # q = quaternion_from_euler(-3.14/2.0, 0.0, 0.0)  # 上方から掴みに行く場合 When grabbing from above
+        # target_pose.orientation.x = q[0]
+        # target_pose.orientation.y = q[1]
+        # target_pose.orientation.z = q[2]
+        # target_pose.orientation.w = q[3]
+
+        # self.arm.set_pose_target(target_pose)  # 目標ポーズ設定
+
         # success, traj_msg,  plan_time, err = self.arm.plan()
-        # print("after plan")
+
         # if err.val == 1:
         #     self.arm.execute(traj_msg)
 
-        # self.arm.go()  # 実行
-
-        target_pose.position.x = 0.45
-        target_pose.position.y = 0.1
-        target_pose.position.z = 0.13
-        q = quaternion_from_euler(-3.14/2.0, 0.0, 0.0)  # 上方から掴みに行く場合 When grabbing from above
-        target_pose.orientation.x = q[0]
-        target_pose.orientation.y = q[1]
-        target_pose.orientation.z = q[2]
-        target_pose.orientation.w = q[3]
-
-        self.arm.set_pose_target(target_pose)  # 目標ポーズ設定
-
-        success, traj_msg,  plan_time, err = self.arm.plan()
-
-        if err.val == 1:
-            self.arm.execute(traj_msg)
-
-        self.open_gripper()
-        self.arm.go()
+        # self.open_gripper()
+        # self.arm.go()
 
     def arm_init(self):
         '''
