@@ -28,29 +28,31 @@ def main():
     print("Current state:")
     print(robot.get_current_state())
 
-    # アーム初期ポーズを表示
+    # アーム初期ポーズを表示 Show initial arm pose
+
     arm_initial_pose = arm.get_current_pose().pose
     print("Arm initial pose:")
     print(arm_initial_pose)
 
-    # 何かを掴んでいた時のためにハンドを開く
+    # 何かを掴んでいた時のためにハンドを開く Open your hand for when you were holding something
+
     gripper_goal.command.position = -0.9
     gripper.send_goal(gripper_goal)
     gripper.wait_for_result(rospy.Duration(1.0))
 
-    # SRDFに定義されている"home"の姿勢にする
+    # SRDFに定義されている"home"の姿勢にする Set to "home" posture defined in SRDF Set to "home" posture defined in SRDF
     arm.set_named_target("l_arm_init_pose")
     arm.go()
     gripper_goal.command.position = 0.0
     gripper.send_goal(gripper_goal)
     gripper.wait_for_result(rospy.Duration(1.0))
 
-    # 掴む準備をする
+    # 掴む準備をする # get ready to grab
     target_pose = geometry_msgs.msg.Pose()
     target_pose.position.x = 0.25
     target_pose.position.y = 0.0
-    target_pose.position.z = 0.3
-    q = quaternion_from_euler(-3.14/2.0, 0.0, 0.0)  # 上方から掴みに行く場合
+    target_pose.position.z = 0.311111111111111111111111111111111111111111111111111111
+    q = quaternion_from_euler(-3.14/2.0, 0.0, 0.0)  # 上方から掴みに行く場合 When grabbing from above
     target_pose.orientation.x = q[0]
     target_pose.orientation.y = q[1]
     target_pose.orientation.z = q[2]
@@ -58,17 +60,17 @@ def main():
     arm.set_pose_target(target_pose)  # 目標ポーズ設定
     arm.go()  # 実行
 
-    # ハンドを開く
+    # ハンドを開く Open hand
     gripper_goal.command.position = -0.7
     gripper.send_goal(gripper_goal)
     gripper.wait_for_result(rospy.Duration(1.0))
 
-    # 掴みに行く
+    # 掴みに行く get ready to grab
     target_pose = geometry_msgs.msg.Pose()
-    target_pose.position.x = 0.25
-    target_pose.position.y = 0.0
-    target_pose.position.z = 0.13
-    q = quaternion_from_euler(-3.14/2.0, 0.0, 0.0)  # 上方から掴みに行く場合
+    target_pose.position.x = 0.3
+    target_pose.position.y = 0.1
+    target_pose.position.z = 0.1
+    q = quaternion_from_euler(-3.14/2.0, 0.0, 0.0)  # 上方から掴みに行く場合 When grabbing from above
     target_pose.orientation.x = q[0]
     target_pose.orientation.y = q[1]
     target_pose.orientation.z = q[2]
@@ -76,17 +78,17 @@ def main():
     arm.set_pose_target(target_pose)  # 目標ポーズ設定
     arm.go()  # 実行
 
-    # ハンドを閉じる
+#     # ハンドを閉じる close the hand
     gripper_goal.command.position = -0.4
     gripper.send_goal(gripper_goal)
     gripper.wait_for_result(rospy.Duration(1.0))
 
-    # 持ち上げる
+#     # 持ち上げる lift
     target_pose = geometry_msgs.msg.Pose()
     target_pose.position.x = 0.25
     target_pose.position.y = 0.0
     target_pose.position.z = 0.3
-    q = quaternion_from_euler(-3.14/2.0, 0.0, 0.0)  # 上方から掴みに行く場合
+    q = quaternion_from_euler(-3.14/2.0, 0.0, 0.0)  # 上方から掴みに行く場合 When grabbing from above
     target_pose.orientation.x = q[0]
     target_pose.orientation.y = q[1]
     target_pose.orientation.z = q[2]
@@ -94,12 +96,12 @@ def main():
     arm.set_pose_target(target_pose)  # 目標ポーズ設定
     arm.go()							# 実行
 
-    # 移動する
+#     # 移動する Moving
     target_pose = geometry_msgs.msg.Pose()
     target_pose.position.x = 0.4
     target_pose.position.y = 0.0
     target_pose.position.z = 0.3
-    q = quaternion_from_euler(-3.14/2.0, 0.0, 0.0)  # 上方から掴みに行く場合
+    q = quaternion_from_euler(-3.14/2.0, 0.0, 0.0)  # 上方から掴みに行く場合 When grabbing from above
     target_pose.orientation.x = q[0]
     target_pose.orientation.y = q[1]
     target_pose.orientation.z = q[2]
@@ -107,12 +109,12 @@ def main():
     arm.set_pose_target(target_pose)  # 目標ポーズ設定
     arm.go()  # 実行
 
-    # 下ろす
+    # 下ろす Put down
     target_pose = geometry_msgs.msg.Pose()
     target_pose.position.x = 0.4
     target_pose.position.y = 0.0
     target_pose.position.z = 0.13
-    q = quaternion_from_euler(-3.14/2.0, 0.0, 0.0)  # 上方から掴みに行く場合
+    q = quaternion_from_euler(-3.14/2.0, 0.0, 0.0)  # 上方から掴みに行く場合 When grabbing from above
     target_pose.orientation.x = q[0]
     target_pose.orientation.y = q[1]
     target_pose.orientation.z = q[2]
@@ -120,23 +122,39 @@ def main():
     arm.set_pose_target(target_pose)  # 目標ポーズ設定
     arm.go()  # 実行
 
-    # ハンドを開く
+    # ハンドを開く open hand 
     gripper_goal.command.position = -0.7
     gripper.send_goal(gripper_goal)
     gripper.wait_for_result(rospy.Duration(1.0))
 
-    # 少しだけハンドを持ち上げる
+    # 少しだけハンドを持ち上げる lift the hand slightly
     target_pose = geometry_msgs.msg.Pose()
     target_pose.position.x = 0.4
     target_pose.position.y = 0.0
     target_pose.position.z = 0.2
-    q = quaternion_from_euler(-3.14/2.0, 0.0, 0.0)  # 上方から掴みに行く場合
+    q = quaternion_from_euler(-3.14/2.0, 0.0, 0.0)  # 上方から掴みに行く場合 When grabbing from above
     target_pose.orientation.x = q[0]
     target_pose.orientation.y = q[1]
     target_pose.orientation.z = q[2]
     target_pose.orientation.w = q[3]
+
+#     target_pose = geometry_msgs.msg.Pose()
+#     target_pose.position.x = 0.3
+#     target_pose.position.y = 0.1
+#     target_pose.position.z = 1.01
+#     q = quaternion_from_euler(-3.14/2.0, 0.0, 0.0)  # 上方から掴みに行く場合 
+#     target_pose.orientation.x = q[0]
+#     target_pose.orientation.y = q[1]
+#     target_pose.orientation.z = q[2]
+#     target_pose.orientation.w = q[3]
+
+
     arm.set_pose_target(target_pose)  # 目標ポーズ設定
     arm.go()  # 実行
+
+# # box_position_x = 0.3
+# # box_position_y = -0.1
+# # box_position_z = 1.01
 
     # SRDFに定義されている"home"の姿勢にする
     arm.set_named_target("l_arm_init_pose")

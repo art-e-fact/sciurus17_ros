@@ -9,7 +9,13 @@ find_package(catkin REQUIRED COMPONENTS
   pcl_conversions
   visualization_msgs
   geometry_msgs
+  message_generation
 )
+
+# add_service_files(
+#   FILES
+#   pick_and_place.srv
+# )
 
 ###################################
 ## catkin specific configuration ##
@@ -25,6 +31,7 @@ catkin_package(
 #  LIBRARIES sciurus17_examples
 #  CATKIN_DEPENDS rospy
 #  DEPENDS system_lib
+#  message_runtime
 )
 
 ###########
@@ -37,6 +44,7 @@ include_directories(
 )
 
 add_executable(object_detection src/object_detection.cpp)
+
 
 target_link_libraries(object_detection
   ${catkin_LIBRARIES}
