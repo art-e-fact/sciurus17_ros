@@ -41,16 +41,17 @@ class pick_and_place_left():
 
         ############################
         rospy.Subscriber("/gazebo/model_states", ModelStates, self.model_state_callback)
-        # print(self.model_coordinates)
-        # self.object_coordinates = self.model_coordinates("8115RC_V2", "")
+
         self.arm_init()
+
         while self.model_found == 0:
             print("Waiting for Model coordinates")
         print("Model Coordinates Found")
+
         self.pick_and_place_service = rospy.Service("/pick_and_place", pick_and_place, self.pick_and_place)
         while self.final_position_found == 0:
-            # print("Waiting for Place Position to be found")
-            a = 1+1
+            print("Waiting for Place Position to be found")
+        print('Place Position Found')
         self.step()
 
     def pick_and_place(self, data):
@@ -104,9 +105,9 @@ class pick_and_place_left():
         # self.arm.set_position_target([data.Pose.position.x, data.Pose.position.y, data.Pose.position.z])
         target_pose = geometry_msgs.msg.Pose()
 
-        target_pose.position.x = 0.2511
-        target_pose.position.y = 0.0
-        target_pose.position.z = 0.3
+        target_pose.position.x = self.item_location.position.x
+        target_pose.position.y = self.item_location.position.y
+        target_pose.position.z = self.item_location.position.z + 0.2
         q = quaternion_from_euler(-3.14/2.0, 0.0, 0.0)  # 上方から掴みに行く場合 When grabbing from above
         target_pose.orientation.x = q[0]
         target_pose.orientation.y = q[1]
@@ -125,11 +126,9 @@ class pick_and_place_left():
 
 
         target_pose.position.x = self.item_location.position.x
-
         target_pose.position.y = self.item_location.position.y 
         target_pose.position.z = self.item_location.position.z - 0.9 # 0.9 represents the the difference in between where the robot pick the cube and the top of the cube
-        print(target_pose.position.z)
-
+                                                                 # See if you can tie this offset to any value obtained from world
         q = quaternion_from_euler(-3.14/2.0, 0.0, 0.0)  # 上方から掴みに行く場合 When grabbing from above
         target_pose.orientation.x = q[0]
         target_pose.orientation.y = q[1]
@@ -173,16 +172,7 @@ class pick_and_place_left():
         '''
         
         '''
-        pass
-
-
         arm_initial_pose = self.arm.get_current_pose().pose
-
-        print("Arm initial pose:")
-        print(arm_initial_pose)
-
-
-        # # 何かを掴んでいた時のためにハンドを開く Open your hand for when you were holding something
 
         self.open_gripper()
 
