@@ -14,7 +14,7 @@ find_package(catkin REQUIRED COMPONENTS
 
 add_service_files(
   FILES
-  pick_and_place.srv
+  check_location.srv
 )
 
 ## Generate added messages and services with any dependencies listed here

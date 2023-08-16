@@ -4,14 +4,13 @@
 import rospy
 import moveit_commander
 import geometry_msgs.msg
-# import gazebo_msgs.msg
-
+from std_srvs.srv import Empty, EmptyResponse
 import rosnode
 import actionlib
 from tf.transformations import quaternion_from_euler
 from control_msgs.msg import (GripperCommandAction, GripperCommandGoal)
 from gazebo_msgs.msg import ModelStates
-from sciurus17_msgs.srv import pick_and_place
+from sciurus17_msgs.srv import check_location
 
 from time import sleep
 
@@ -48,13 +47,13 @@ class pick_and_place_left():
             print("Waiting for Model coordinates")
         print("Model Coordinates Found")
 
-        self.pick_and_place_service = rospy.Service("/pick_and_place", pick_and_place, self.pick_and_place)
+        self.place_check_location_service = rospy.Service("/artefacts/check_location", check_location, self.place_check_location)
         while self.final_position_found == 0:
             print("Waiting for Place Position to be found")
         print('Place Position Found')
-        self.step()
+        self.pick_and_place_service = rospy.Service("/artefacts/pick_and_place", Empty, self.pick_and_place)
 
-    def pick_and_place(self, data):
+    def place_check_location(self, data):
         target_place_pose = geometry_msgs.msg.Pose()
         target_place_pose.position.x = data.Pose.position.x
         target_place_pose.position.y = data.Pose.position.y
@@ -99,25 +98,18 @@ class pick_and_place_left():
 
         self.model_found = 1
 
-    def step(self):
+    def pick_and_place(self, empty_data):
         '''
         Step is a function that executes pre-pick, pick, & place motions
         '''
+
         start_time = rospy.get_rostime()
+
         print(start_time)
-        # self.arm.set_position_target([data.Pose.position.x, data.Pose.position.y, data.Pose.position.z])
-        target_pose = geometry_msgs.msg.Pose()
 
-        target_pose.position.x = self.item_location.position.x
-        target_pose.position.y = self.item_location.position.y
-        target_pose.position.z = self.item_location.position.z + 0.2
-        q = quaternion_from_euler(-3.14/2.0, 0.0, 0.0)  # 上方から掴みに行く場合 When grabbing from above
-        target_pose.orientation.x = q[0]
-        target_pose.orientation.y = q[1]
-        target_pose.orientation.z = q[2]
-        target_pose.orientation.w = q[3]
+        pre_grip_pose = self.pre_grip()
 
-        self.arm.set_pose_target(target_pose)  # 目標ポーズ設定
+        self.arm.set_pose_target(pre_grip_pose)  # 目標ポーズ設定
 
         success, traj_msg,  plan_time, err = self.arm.plan()
 
@@ -125,41 +117,23 @@ class pick_and_place_left():
             self.arm.execute(traj_msg)
 
         self.open_gripper()
-        self.arm.go()							# 実行
 
-# 20208000000
+        grip_pose = self.grip()
 
-        target_pose.position.x = self.item_location.position.x
-        target_pose.position.y = self.item_location.position.y 
-        target_pose.position.z = self.item_location.position.z - 0.9 # 0.9 represents the the difference in between where the robot pick the cube and the top of the cube
-                                                                 # See if you can tie this offset to any value obtained from world
-        q = quaternion_from_euler(-3.14/2.0, 0.0, 0.0)  # 上方から掴みに行く場合 When grabbing from above
-        target_pose.orientation.x = q[0]
-        target_pose.orientation.y = q[1]
-        target_pose.orientation.z = q[2]
-        target_pose.orientation.w = q[3]
+        self.arm.set_pose_target(grip_pose)
 
-        self.arm.set_pose_target(target_pose)
         self.arm.go()
 
         self.close_gripper()
-        self.arm.go()
 
         # Hard coded final positon
         # target_pose.position.x = 0.45
         # target_pose.position.y = 0.1
         # target_pose.position.z = 0.13
-        target_pose.position.x = self.good_place_pose_x
-        target_pose.position.y = self.good_place_pose_y
-        target_pose.position.z = self.good_place_pose_z
 
-        q = quaternion_from_euler(-3.14/2.0, 0.0, 0.0)  # 上方から掴みに行く場合 When grabbing from above
-        target_pose.orientation.x = q[0]
-        target_pose.orientation.y = q[1]
-        target_pose.orientation.z = q[2]
-        target_pose.orientation.w = q[3]
+        place_pose = self.place()
 
-        self.arm.set_pose_target(target_pose)  # 目標ポーズ設定
+        self.arm.set_pose_target(place_pose)  # 目標ポーズ設定
 
         success, traj_msg,  plan_time, err = self.arm.plan()
 
@@ -167,7 +141,6 @@ class pick_and_place_left():
             self.arm.execute(traj_msg)
 
         self.open_gripper()
-        self.arm.go()
 
         self.arm_init()
 
@@ -176,6 +149,8 @@ class pick_and_place_left():
 
         takt_time =  end_time - start_time
         print(takt_time)
+
+        return EmptyResponse()
 
     def arm_init(self):
         '''
@@ -191,10 +166,84 @@ class pick_and_place_left():
         self.gripper.send_goal(self.gripper_goal)
         self.gripper.wait_for_result(rospy.Duration(1.0))
 
+    def pre_grip(self):
+        '''
+        This function is used to get the 
+        '''
+        target_pose = geometry_msgs.msg.Pose()
+
+        target_pose.position.x = self.item_location.position.x
+        target_pose.position.y = self.item_location.position.y
+        target_pose.position.z = self.item_location.position.z + 0.2
+
+        q = quaternion_from_euler(-3.14/2.0, 0.0, 0.0)  # 上方から掴みに行く場合 When grabbing from above
+        target_pose.orientation.x = q[0]
+        target_pose.orientation.y = q[1]
+        target_pose.orientation.z = q[2]
+        target_pose.orientation.w = q[3]
+
+        return target_pose
+    
+    def grip(self):
+        '''
+        
+        '''
+        target_pose = geometry_msgs.msg.Pose()
+
+        target_pose.position.x = self.item_location.position.x
+        target_pose.position.y = self.item_location.position.y 
+        target_pose.position.z = self.item_location.position.z - 0.9 # 0.9 represents the the difference in between where the robot pick the cube and the top of the cube
+                                                                 # See if you can tie this offset to any value obtained from world
+        q = quaternion_from_euler(-3.14/2.0, 0.0, 0.0)  # 上方から掴みに行く場合 When grabbing from above
+        target_pose.orientation.x = q[0]
+        target_pose.orientation.y = q[1]
+        target_pose.orientation.z = q[2]
+        target_pose.orientation.w = q[3]
+
+        return target_pose
+    
+    def place(self):
+        '''
+
+        '''
+        target_pose = geometry_msgs.msg.Pose()
+
+        target_pose.position.x = self.good_place_pose_x
+        target_pose.position.y = self.good_place_pose_y
+        target_pose.position.z = self.good_place_pose_z
+
+        q = quaternion_from_euler(-3.14/2.0, 0.0, 0.0)  # 上方から掴みに行く場合 When grabbing from above
+        target_pose.orientation.x = q[0]
+        target_pose.orientation.y = q[1]
+        target_pose.orientation.z = q[2]
+        target_pose.orientation.w = q[3]
+
+        self.arm.set_pose_target(target_pose)  # 目標ポーズ設定
+
+        return target_pose
+
+    def move_arm(self, target_location, q, offset):
+        '''
+        Work in progress function
+        '''
+        target_pose = geometry_msgs.msg.Pose()
+
+        target_pose.position.x = self.target_location.position.x
+        target_pose.position.y = self.target_location.position.y 
+        target_pose.position.z = self.target_location.position.z + (offset) # 0.9 represents the the difference in between where the robot pick the cube and the top of the cube
+                                                                 # See if you can tie this offset to any value obtained from world
+        q = quaternion_from_euler(-3.14/2.0, 0.0, 0.0)  # 上方から掴みに行く場合 When grabbing from above
+        target_pose.orientation.x = q[0]
+        target_pose.orientation.y = q[1]
+        target_pose.orientation.z = q[2]
+        target_pose.orientation.w = q[3]
+
+        return target_pose
+    
     def open_gripper(self):
 
         '''
-        
+        Function that opens gripper to a fixed width
         '''
 
         # ハンドを開く Open hand
@@ -204,10 +253,12 @@ class pick_and_place_left():
 
         self.gripper_status = 1
 
+        self.arm.go()							
+
     def close_gripper(self):
 
         '''
-        
+        Function that closes gripper to a fixed width
         '''
 
         # ハンドを閉じる close the hand
@@ -216,9 +267,8 @@ class pick_and_place_left():
         self.gripper.wait_for_result(rospy.Duration(1.0))
 
         self.gripper_status = 0
-						# 実行
-
-
+		
+        self.arm.go()							
 
 if __name__ == '__main__':
 
