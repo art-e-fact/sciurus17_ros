@@ -64,7 +64,7 @@ class pick_and_place_left():
         target_place_pose.orientation.y = q[1]
         target_place_pose.orientation.z = q[2]
         target_place_pose.orientation.w = q[3]
-        print(target_place_pose.position.x)
+        # print(target_place_pose.position.x)
 
 
         self.arm.set_pose_target(target_place_pose)  # 目標ポーズ設定
@@ -85,6 +85,7 @@ class pick_and_place_left():
         '''
         This subscriber searches through the available models in the world and stores the x, y, and z world coordinte of the desired model for picking up
         '''
+
         desired_model_name = 'cube3'# This is where you must store the desired model names
         self.item_location = geometry_msgs.msg.Pose()
 
@@ -102,6 +103,8 @@ class pick_and_place_left():
         '''
         Step is a function that executes pre-pick, pick, & place motions
         '''
+        start_time = rospy.get_rostime()
+        print(start_time)
         # self.arm.set_position_target([data.Pose.position.x, data.Pose.position.y, data.Pose.position.z])
         target_pose = geometry_msgs.msg.Pose()
 
@@ -124,6 +127,7 @@ class pick_and_place_left():
         self.open_gripper()
         self.arm.go()							# 実行
 
+# 20208000000
 
         target_pose.position.x = self.item_location.position.x
         target_pose.position.y = self.item_location.position.y 
@@ -167,6 +171,11 @@ class pick_and_place_left():
 
         self.arm_init()
 
+        end_time = rospy.get_rostime()
+        print(end_time)
+
+        takt_time =  end_time - start_time
+        print(takt_time)
 
     def arm_init(self):
         '''
