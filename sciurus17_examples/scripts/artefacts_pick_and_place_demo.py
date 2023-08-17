@@ -272,7 +272,7 @@ class pick_and_place_left():
 
 if __name__ == '__main__':
 
-    rospy.init_node("sciurus17_pick_and_place_controller")
+    rospy.init_node("artefacts_sciurus17_pick_and_place_controller")
 
     Mover = pick_and_place_left()
 
