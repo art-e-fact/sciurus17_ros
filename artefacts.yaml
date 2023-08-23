@@ -1,0 +1,11 @@
+jobs:
+  test:
+    runtime:
+      framework: ros1:noetic
+      simulator: ''
+    scenarios:
+      defaults: {}
+      settings: []
+    type: test
+project: Sciurus17
+version: 0.1.0
