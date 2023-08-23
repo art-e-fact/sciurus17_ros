@@ -24,6 +24,7 @@ class pick_and_place_left:
         """
         The init function is neccesary to initialize all variables, parameters, and other functions.
         """
+        sleep(10)
         self.model_found = 0
         self.final_position_found = 0
         self.robot = moveit_commander.RobotCommander()
