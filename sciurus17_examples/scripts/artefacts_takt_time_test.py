@@ -10,24 +10,27 @@ from time import sleep
 import unittest
 import rostest
 
+
 class taktTimeTest(unittest.TestCase):
-    '''
-    The taktTimeTest Class creates a test that checks the takt time of the movement between picking a block, placing it in a location 
+    """
+    The taktTimeTest Class creates a test that checks the takt time of the movement between picking a block, placing it in a location
     and then returning to the initial position
-    '''
+    """
 
     def __init__(self, *args):
         super(taktTimeTest, self).__init__(*args)
         rospy.init_node("takt_time_test")
 
     def test_case(self):
-        '''
-        The test_case function tests the Takt time for the robot to complete a pick and place action, then return to its initial position. 
-        '''
+        """
+        The test_case function tests the Takt time for the robot to complete a pick and place action, then return to its initial position.
+        """
 
         sleep(60)
         # rospy.wait_for_service("/artefacts/check_location")
-        place_check_location_test = rospy.ServiceProxy("/artefacts/check_location", check_location)
+        place_check_location_test = rospy.ServiceProxy(
+            "/artefacts/check_location", check_location
+        )
 
         # rospy.wait_for_service("/artefacts/pick_and_place")
         sleep(30)
@@ -57,14 +60,13 @@ class taktTimeTest(unittest.TestCase):
         takt_time = end_time - start_time
 
         num_str = str(takt_time)
-        double_str = num_str[:2] + '.' + num_str[2:4]
+        double_str = num_str[:2] + "." + num_str[2:4]
         double_value = float(double_str)
-        test_message = 'takt time is less than 25'
+        test_message = "takt time is less than 25"
 
         rospy.logerr(double_value)
         self.assertLess(double_value, 25.00, test_message)
 
 
-
-if __name__ == '__main__':
-    rostest.rosrun('sciurus17_examples', "takt_time_test", taktTimeTest)
+if __name__ == "__main__":
+    rostest.rosrun("sciurus17_examples", "takt_time_test", taktTimeTest)

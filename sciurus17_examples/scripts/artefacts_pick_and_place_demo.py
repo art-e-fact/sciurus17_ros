@@ -62,9 +62,9 @@ class pick_and_place_left:
         )
 
     def place_check_location(self, data):
-        '''
+        """
         the function receives an x, y, z position for the user service call and determines using the moveit path planner if the arm is able to reach the designated location to place the block
-        '''
+        """
         target_place_pose = geometry_msgs.msg.Pose()
         target_place_pose.position.x = data.Pose.position.x
         target_place_pose.position.y = data.Pose.position.y
