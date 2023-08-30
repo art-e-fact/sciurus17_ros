@@ -68,6 +68,12 @@ catkin_install_python(
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
+file(GLOB python_src src/*.py)
+catkin_install_python(
+  PROGRAMS ${python_src}
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+
 if(CATKIN_ENABLE_TESTING)
   find_package(rostest REQUIRED)
   add_rostest(test/artefacts_takt_time.test)
