@@ -4,6 +4,7 @@
 import rospy
 import moveit_commander
 import geometry_msgs.msg
+from std_msgs.msg import Float32
 from std_srvs.srv import Empty, EmptyResponse
 import rosnode
 import actionlib
@@ -44,6 +45,7 @@ class pick_and_place_left:
         self.gripper_status = 0
 
         rospy.Subscriber("/gazebo/model_states", ModelStates, self.model_state_callback)
+        self.takt_time_pub = rospy.Publisher("/artefacts/takt_time", Float32, queue_size = 10)
 
         self.arm_init()
 
@@ -163,6 +165,14 @@ class pick_and_place_left:
 
         takt_time = end_time - start_time
         print(takt_time)
+
+        takt_time = end_time - start_time
+
+        num_str = str(takt_time)
+        double_str = num_str[:2] + "." + num_str[2:4]
+        double_value = float(double_str)
+
+        self.takt_time_pub.publish(double_value)
 
         return EmptyResponse()
 
