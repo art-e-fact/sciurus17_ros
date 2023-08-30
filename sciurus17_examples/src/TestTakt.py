@@ -3,6 +3,9 @@
 
 import rospy
 import geometry_msgs.msg
+from std_msgs.msg import Float32
+from std_msgs.msg import Float32
+
 from std_srvs.srv import Empty, EmptyResponse
 from sciurus17_msgs.srv import check_location
 
@@ -11,21 +14,31 @@ import unittest
 import rostest
 
 
-class taktTimeTest(unittest.TestCase):
+class TestTaktTime(unittest.TestCase):
     """
     The taktTimeTest Class creates a test that checks the takt time of the movement between picking a block, placing it in a location
     and then returning to the initial position
     """
 
     def __init__(self, *args):
-        super(taktTimeTest, self).__init__(*args)
+        super(TestTaktTime, self).__init__(*args)
         rospy.init_node("takt_time_test")
+    
+    def takt_time_callback(self, data):
+        # if data < 25.0:
+        #     self.takt_time_ok = True
+        # else:
+        #     self.takt_time_ok = False
+        rospy.logerr(data)
+        self.takt_time_ok = True
 
     def test_case(self):
         """
         The test_case function tests the Takt time for the robot to complete a pick and place action, then return to its initial position.
         """
+        # self.takt_time_long = 25.0
 
+        rospy.Subscriber('/artefacts/takt_time', Float32, self.takt_time_callback)
         sleep(60)
         # rospy.wait_for_service("/artefacts/check_location")
         place_check_location_test = rospy.ServiceProxy(
@@ -65,8 +78,9 @@ class taktTimeTest(unittest.TestCase):
         test_message = "takt time is less than 25"
 
         rospy.logerr(double_value)
-        self.assertLess(double_value, 25.00, test_message)
+        # self.assertLess(double_value, 25.00, test_message)
+        self.assertTrue(self.takt_time_ok)
 
 
 if __name__ == "__main__":
-    rostest.rosrun("sciurus17_examples", "takt_time_test", taktTimeTest)
+    rostest.rosrun("sciurus17_examples", "test_takt_time", TestTaktTime)

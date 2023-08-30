@@ -45,7 +45,10 @@ class pick_and_place_left:
         self.gripper_status = 0
 
         rospy.Subscriber("/gazebo/model_states", ModelStates, self.model_state_callback)
-        self.takt_time_pub = rospy.Publisher("/artefacts/takt_time", Float32, queue_size = 10)
+        
+        self.takt_time_pub = rospy.Publisher(
+            "/artefacts/takt_time", Float32, queue_size=10
+        )
 
         self.arm_init()
 
@@ -171,7 +174,8 @@ class pick_and_place_left:
         num_str = str(takt_time)
         double_str = num_str[:2] + "." + num_str[2:4]
         double_value = float(double_str)
-
+        
+        rospy.logerr("publish")
         self.takt_time_pub.publish(double_value)
 
         return EmptyResponse()

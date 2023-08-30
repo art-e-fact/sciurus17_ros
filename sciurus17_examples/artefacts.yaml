@@ -5,10 +5,14 @@ jobs:
       framework: ros1:noetic
       simulator: gazebo:11
     scenarios:
-      subscriptions:
-        takt_time: /artefacts/takt_time
-      rosbag_record: subscriptions
+      defaults: # Global to all scenarios, and overridden in specific scenarios.
+        metrics: [/artefacts/takt_time]
+        # output_dirs: [/tmp/outputs/]
+        params:
+        Scenario:
+          metrics: [/artefacts/takt_time]
       settings:
+        # metrics: /artefacts/takt_time
         - name: sciurus17
           ros_testpackage: sciurus17_examples
           ros_testfile: artefacts_takt_time.launch
