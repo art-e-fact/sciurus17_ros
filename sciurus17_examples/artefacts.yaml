@@ -6,16 +6,18 @@ jobs:
       simulator: gazebo:11
     scenarios:
       defaults: # Global to all scenarios, and overridden in specific scenarios.
-        metrics: [/artefacts/takt_time]
-        # output_dirs: [/tmp/outputs/]
         params:
-        Scenario:
-          metrics: [/artefacts/takt_time]
+        subscriptions:
+          takt_time: /artefacts/takt_time
+        rosbag_record: subscriptions
+        rosbag_postprocess: sciurus_post_process.py
       settings:
         # metrics: /artefacts/takt_time
         - name: sciurus17
           ros_testpackage: sciurus17_examples
           ros_testfile: artefacts_takt_time.launch
-      
+          # metrics: [/artefacts/takt_time]
+          
+
 project: Sciurus17
 version: 0.1.0
