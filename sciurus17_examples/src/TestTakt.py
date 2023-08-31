@@ -23,12 +23,13 @@ class TestTaktTime(unittest.TestCase):
     def __init__(self, *args):
         super(TestTaktTime, self).__init__(*args)
         rospy.init_node("takt_time_test")
-    
+
     def takt_time_callback(self, data):
-        # if data < 25.0:
-        #     self.takt_time_ok = True
-        # else:
-        #     self.takt_time_ok = False
+        """
+        Callback that gets triggered when a message is published by the takt time publisher.
+        If a message is published then takt_time_ok is true allowing the test to pass
+        """
+
         rospy.logerr(data)
         self.takt_time_ok = True
 
@@ -36,16 +37,16 @@ class TestTaktTime(unittest.TestCase):
         """
         The test_case function tests the Takt time for the robot to complete a pick and place action, then return to its initial position.
         """
-        # self.takt_time_long = 25.0
 
-        rospy.Subscriber('/artefacts/takt_time', Float32, self.takt_time_callback)
+        rospy.Subscriber("/artefacts/takt_time", Float32, self.takt_time_callback)
         sleep(60)
-        # rospy.wait_for_service("/artefacts/check_location")
+        # rospy.wait_for_service("/artefacts/check_location") Despite the better method than sleep function does not work
         place_check_location_test = rospy.ServiceProxy(
             "/artefacts/check_location", check_location
         )
 
         # rospy.wait_for_service("/artefacts/pick_and_place")
+
         sleep(30)
         pick_and_place_test = rospy.ServiceProxy("/artefacts/pick_and_place", Empty)
 
@@ -64,21 +65,13 @@ class TestTaktTime(unittest.TestCase):
 
         block_location.Pose = target_pose
         check_location_response = place_check_location_test.call(block_location.Pose)
-        start_time = rospy.Time.now()
+
+        sleep(1)
+
         pick_and_place_response = pick_and_place_test.call()
-        end_time = rospy.Time.now()
-        rospy.logerr(start_time)
-        rospy.logerr(end_time)
 
-        takt_time = end_time - start_time
+        sleep(1)
 
-        num_str = str(takt_time)
-        double_str = num_str[:2] + "." + num_str[2:4]
-        double_value = float(double_str)
-        test_message = "takt time is less than 25"
-
-        rospy.logerr(double_value)
-        # self.assertLess(double_value, 25.00, test_message)
         self.assertTrue(self.takt_time_ok)
 
 

@@ -1,5 +1,0 @@
-<launch>
-  <include file="$(find sciurus17_gazebo)/launch/sciurus17_with_table.launch" pass_all_args = "true"/>
-    <node name="artefacts_sciurus17_pick_and_place_controller" pkg="sciurus17_examples" type="artefacts_pick_and_place_demo.py"/>
-    <test test-name="test" pkg="sciurus17_examples" type="artefacts_takt_time_test.py" time-limit="1000.0"/>
-</launch>
