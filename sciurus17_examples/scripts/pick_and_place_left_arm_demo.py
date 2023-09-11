@@ -51,7 +51,7 @@ def main():
     target_pose = geometry_msgs.msg.Pose()
     target_pose.position.x = 0.25
     target_pose.position.y = 0.0
-    target_pose.position.z = 0.311111111111111111111111111111111111111111111111111111
+    target_pose.position.z = 0.3
     q = quaternion_from_euler(-3.14/2.0, 0.0, 0.0)  # 上方から掴みに行く場合 When grabbing from above
     target_pose.orientation.x = q[0]
     target_pose.orientation.y = q[1]
@@ -138,23 +138,8 @@ def main():
     target_pose.orientation.z = q[2]
     target_pose.orientation.w = q[3]
 
-#     target_pose = geometry_msgs.msg.Pose()
-#     target_pose.position.x = 0.3
-#     target_pose.position.y = 0.1
-#     target_pose.position.z = 1.01
-#     q = quaternion_from_euler(-3.14/2.0, 0.0, 0.0)  # 上方から掴みに行く場合 
-#     target_pose.orientation.x = q[0]
-#     target_pose.orientation.y = q[1]
-#     target_pose.orientation.z = q[2]
-#     target_pose.orientation.w = q[3]
-
-
     arm.set_pose_target(target_pose)  # 目標ポーズ設定
     arm.go()  # 実行
-
-# # box_position_x = 0.3
-# # box_position_y = -0.1
-# # box_position_z = 1.01
 
     # SRDFに定義されている"home"の姿勢にする
     arm.set_named_target("l_arm_init_pose")

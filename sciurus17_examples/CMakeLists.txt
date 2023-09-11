@@ -12,10 +12,6 @@ find_package(catkin REQUIRED COMPONENTS
   message_generation
 )
 
-# add_service_files(
-#   FILES
-#   pick_and_place.srv
-# )
 
 ###################################
 ## catkin specific configuration ##

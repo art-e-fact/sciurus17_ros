@@ -16,7 +16,7 @@ from sciurus17_msgs.srv import check_location
 from time import sleep
 
 
-class pick_and_place_left:
+class pickAndPlaceLeft:
     """
     The pick and place class uses the left arm group and left gripper to pick and place objects
     """
@@ -306,7 +306,7 @@ class pick_and_place_left:
 if __name__ == "__main__":
     rospy.init_node("artefacts_sciurus17_pick_and_place_controller")
 
-    Mover = pick_and_place_left()
+    Mover = pickAndPlaceLeft()
 
     rospy.spin()
 

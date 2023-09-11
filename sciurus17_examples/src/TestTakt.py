@@ -30,7 +30,7 @@ class TestTaktTime(unittest.TestCase):
         If a message is published then takt_time_ok is true allowing the test to pass
         """
 
-        rospy.logerr(data)
+        rospy.loginfo(data)
         self.takt_time_ok = True
 
     def test_case(self):
