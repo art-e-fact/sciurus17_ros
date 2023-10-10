@@ -23,6 +23,13 @@ class TestTaktTime(unittest.TestCase):
     def __init__(self, *args):
         super(TestTaktTime, self).__init__(*args)
         rospy.init_node("takt_time_test")
+        rospy.Subscriber("/artefacts/takt_time", Float32, self.takt_time_callback)
+        self.place_check_location_test = rospy.ServiceProxy(
+            "/artefacts/check_location", check_location
+        )
+        self.pick_and_place_test = rospy.ServiceProxy(
+            "/artefacts/pick_and_place", Empty
+        )
 
     def takt_time_callback(self, data):
         """
@@ -38,17 +45,7 @@ class TestTaktTime(unittest.TestCase):
         The test_case function tests the Takt time for the robot to complete a pick and place action, then return to its initial position.
         """
 
-        rospy.Subscriber("/artefacts/takt_time", Float32, self.takt_time_callback)
-        sleep(60)
-        # rospy.wait_for_service("/artefacts/check_location") Despite the better method than sleep function does not work
-        place_check_location_test = rospy.ServiceProxy(
-            "/artefacts/check_location", check_location
-        )
-
-        # rospy.wait_for_service("/artefacts/pick_and_place")
-
-        sleep(30)
-        pick_and_place_test = rospy.ServiceProxy("/artefacts/pick_and_place", Empty)
+        rospy.wait_for_service("/artefacts/check_location")
 
         block_location = check_location()
 
@@ -64,11 +61,11 @@ class TestTaktTime(unittest.TestCase):
         target_pose.orientation.w = 1
 
         block_location.Pose = target_pose
-        check_location_response = place_check_location_test.call(block_location.Pose)
+        check_location_response = self.place_check_location_test.call(target_pose)
 
         sleep(1)
 
-        pick_and_place_response = pick_and_place_test.call()
+        pick_and_place_response = self.pick_and_place_test.call()
 
         sleep(1)
 

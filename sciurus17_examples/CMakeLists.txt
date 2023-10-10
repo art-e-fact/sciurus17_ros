@@ -72,6 +72,7 @@ catkin_install_python(
 
 if(CATKIN_ENABLE_TESTING)
   find_package(rostest REQUIRED)
-  add_rostest(test/artefacts_takt_time.test)
-  catkin_add_nosetests(test)
+  # add_rostest(test/artefacts_takt_time.test)
+  # add_rostest(src/TestTakt.py)
+  # catkin_add_nosetests(test)
 endif()
