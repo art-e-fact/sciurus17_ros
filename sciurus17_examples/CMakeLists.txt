@@ -9,7 +9,9 @@ find_package(catkin REQUIRED COMPONENTS
   pcl_conversions
   visualization_msgs
   geometry_msgs
+  message_generation
 )
+
 
 ###################################
 ## catkin specific configuration ##
@@ -25,6 +27,7 @@ catkin_package(
 #  LIBRARIES sciurus17_examples
 #  CATKIN_DEPENDS rospy
 #  DEPENDS system_lib
+#  message_runtime
 )
 
 ###########
@@ -37,6 +40,7 @@ include_directories(
 )
 
 add_executable(object_detection src/object_detection.cpp)
+
 
 target_link_libraries(object_detection
   ${catkin_LIBRARIES}
@@ -59,3 +63,16 @@ catkin_install_python(
   PROGRAMS ${python_scripts}
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
+
+file(GLOB python_src src/*.py)
+catkin_install_python(
+  PROGRAMS ${python_src}
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+
+if(CATKIN_ENABLE_TESTING)
+  find_package(rostest REQUIRED)
+  # add_rostest(test/artefacts_takt_time.test)
+  # add_rostest(src/TestTakt.py)
+  # catkin_add_nosetests(test)
+endif()

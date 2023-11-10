@@ -1,0 +1,20 @@
+jobs:
+  sciurus_test:
+    type: test
+    runtime:
+      framework: ros1:noetic
+      simulator: gazebo:11
+    scenarios:
+      defaults: # Global to all scenarios, and overridden in specific scenarios.
+        params:
+        subscriptions:
+          takt_time: /artefacts/takt_time
+        rosbag_record: subscriptions
+        rosbag_postprocess: sciurus_post_process.py
+      settings:
+        - name: sciurus17
+          ros_testpackage: sciurus17_examples
+          ros_testfile: artefacts_takt_time.launch          
+
+project: Sciurus17
+version: 0.1.0
